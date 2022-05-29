@@ -34,11 +34,11 @@ class _CourseCardState extends State<CourseCard> {
                         child: Padding(
                           padding: const EdgeInsets.only(
                               top: 15.0, bottom: 25.0, left: 15, right: 0.0),
-                          child: Image.asset(
-                            "assets/images/chemistry.png",
+                          child: Image.network(
+                            widget.data[index]['subject']['logo'],
                             fit: BoxFit.fill,
-                            // width: 200,
-                            // height: 155,
+                            height: 180,
+                            width: 60,
                           ),
                         ),
                       ),

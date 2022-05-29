@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_typing_uninitialized_variables, avoid_unnecessary_containers
 
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sqillup_student/globe_functions/globe_functions.dart';
@@ -11,7 +12,6 @@ import 'package:sqillup_student/screens/chapter/ongoing.dart';
 import 'package:sqillup_student/screens/chapter/wishlisted.dart';
 import 'package:sqillup_student/screens/dashboard/dashboard.dart';
 import 'package:sqillup_student/widgets/sized_boxes.dart';
-
 import '../../../styles/style.dart';
 import '../../../widgets/assignment_card.dart';
 import '../../../widgets/student_activity_tabs.dart';
@@ -28,29 +28,30 @@ class Chapter extends StatefulWidget {
 
 class _ChapterState extends State<Chapter> {
   ChapterServices chapterServices = ChapterServices();
-  var data;
+  var lessonData;
+  var subjectData;
   var lessonType = 'all';
-
   var selectedExamBoard;
-  List subjects = [
-    'assets/subjects/sub1.png',
-    'assets/subjects/sub2.png',
-    'assets/subjects/sub3.png',
-    'assets/subjects/sub4.png'
-  ];
-
-  var selectedSubject = 'assets/subjects/sub1.png';
+  int selectedSubject = 0;
 
   @override
   void initState() {
     super.initState();
-    getAllChpter();
+    viewAllLesson(1);
+    viewAllSubjects();
   }
 
-  getAllChpter() async {
-    data = await chapterServices.viewAllLesson();
+  viewAllLesson(int subjectId) async {
+    lessonData = await chapterServices.viewAllLesson(subjectId);
     setState(() {
-      data = data;
+      lessonData = lessonData;
+    });
+  }
+
+  viewAllSubjects() async {
+    subjectData = await chapterServices.viewAllSubjects();
+    setState(() {
+      subjectData = subjectData;
     });
   }
 
@@ -119,42 +120,53 @@ class _ChapterState extends State<Chapter> {
                   ),
                 ),
                 const SizedBoxH20(),
-                Container(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      for (var sub in subjects)
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedSubject = sub;
-                            });
-                          },
-                          child: Container(
-                            width: 53,
-                            height: 53,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                                border: selectedSubject == sub
-                                    ? Border.all(color: Styles.sBlue, width: 2)
-                                    : Border.all(color: Colors.white, width: 2),
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF707070)
-                                        .withOpacity(.15),
-                                    offset: const Offset(0.0, 6.0),
-                                    blurRadius: 12.0,
-                                  )
-                                ]),
-                            child: Image.asset(
-                              sub,
-                              width: 20,
-                            ),
-                          ),
-                        )
-                    ],
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+                  child: Container(
+                    height: 50,
+                    child: subjectData != null
+                        ? ListView.builder(
+                            itemCount: subjectData.length,
+                            padding: EdgeInsets.zero,
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (context, index) => GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedSubject = index;
+                                      viewAllLesson(subjectData[index]['id']);
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Container(
+                                      width: 48,
+                                      height: 48,
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        border: selectedSubject == index
+                                            ? Border.all(
+                                                color: Styles.sBlue, width: 2)
+                                            : Border.all(
+                                                color: Colors.white, width: 2),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF707070)
+                                                .withOpacity(.15),
+                                            offset: const Offset(0.0, 6.0),
+                                            blurRadius: 12.0,
+                                          )
+                                        ],
+                                        borderRadius: BorderRadius.circular(7),
+                                      ),
+                                      child: Image.network(
+                                        subjectData[index]['logo'],
+                                        width: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ))
+                        : const CircularProgressIndicator(),
                   ),
                 ),
                 const SizedBoxH20(),
@@ -295,7 +307,9 @@ class _ChapterState extends State<Chapter> {
                 ),
                 const SizedBoxH20(),
                 if (lessonType == 'all')
-                  data == null ? Center(child: CircularProgressIndicator()) : ChapterAll(data: data),
+                  lessonData == null
+                      ? Center(child: CircularProgressIndicator())
+                      : ChapterAll(data: lessonData),
                 if (lessonType == 'ongoing') ChapterOngoing(),
                 if (lessonType == 'wishlist') ChapterWishlisted(),
                 if (lessonType == 'completed') ChapterCompleted(),

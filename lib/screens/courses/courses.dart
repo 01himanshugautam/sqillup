@@ -22,26 +22,30 @@ class Courses extends StatefulWidget {
 
 class _CoursesState extends State<Courses> {
   ChapterServices chapterServices = ChapterServices();
-  var data;
+  var chapterData;
+  var subjectData;
+  var lessonType = 'all';
   var selectedExamBoard;
-  List subjects = [
-    'assets/subjects/sub1.png',
-    'assets/subjects/sub2.png',
-    'assets/subjects/sub3.png',
-    'assets/subjects/sub4.png'
-  ];
+  int selectedSubject = 0;
 
-  var selectedSubject = 'assets/subjects/sub1.png';
   @override
   void initState() {
     super.initState();
-    viewAllLesson();
+    viewAllChapter(1);
+    viewAllSubjects();
   }
 
-  viewAllLesson() async {
-    data = await chapterServices.viewAllLesson();
+  viewAllChapter(int subjectId) async {
+    chapterData = await chapterServices.viewAllChapter(subjectId);
     setState(() {
-      data = data;
+      chapterData = chapterData;
+    });
+  }
+
+  viewAllSubjects() async {
+    subjectData = await chapterServices.viewAllSubjects();
+    setState(() {
+      subjectData = subjectData;
     });
   }
 
@@ -123,49 +127,56 @@ class _CoursesState extends State<Courses> {
                 Padding(
                   padding: const EdgeInsets.only(left: 5.0, right: 5.0),
                   child: Container(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        for (var sub in subjects)
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedSubject = sub;
-                              });
-                            },
-                            child: Container(
-                              width: 48,
-                              height: 48,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                border: selectedSubject == sub
-                                    ? Border.all(color: Styles.sBlue, width: 2)
-                                    : Border.all(color: Colors.white, width: 2),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF707070)
-                                        .withOpacity(.15),
-                                    offset: const Offset(0.0, 6.0),
-                                    blurRadius: 12.0,
-                                  )
-                                ],
-                                borderRadius: BorderRadius.circular(7),
-                              ),
-                              child: Image.asset(
-                                sub,
-                                width: 20,
-                              ),
-                            ),
-                          )
-                      ],
-                    ),
+                    height: 50,
+                    child: subjectData != null
+                        ? ListView.builder(
+                            itemCount: subjectData.length,
+                            padding: EdgeInsets.zero,
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (context, index) => GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedSubject = index;
+                                      viewAllChapter(subjectData[index]['id']);
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Container(
+                                      width: 48,
+                                      height: 48,
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        border: selectedSubject == index
+                                            ? Border.all(
+                                                color: Styles.sBlue, width: 2)
+                                            : Border.all(
+                                                color: Colors.white, width: 2),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF707070)
+                                                .withOpacity(.15),
+                                            offset: const Offset(0.0, 6.0),
+                                            blurRadius: 12.0,
+                                          )
+                                        ],
+                                        borderRadius: BorderRadius.circular(7),
+                                      ),
+                                      child: Image.network(
+                                        subjectData[index]['logo'],
+                                        width: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ))
+                        :const CircularProgressIndicator(),
                   ),
                 ),
                 const SizedBoxH10(),
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 1.5,
-                 child: CourseCard(data: data),
+                  child: CourseCard(data: chapterData),
                 ),
               ],
             ),
