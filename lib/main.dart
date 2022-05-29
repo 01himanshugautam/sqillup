@@ -38,10 +38,10 @@ class MyApp extends StatelessWidget {
         //   // const ResponsiveBreakpoint.autoScale(2460, name: "4K"),
         // ],
       ),
-      // home: FormBackground(
-      //   activeForm: 'signin',
-      // ),
-      home: Dashboard(selectedBottomTab: 0),
+      home: FormBackground(
+        activeForm: 'signin',
+      ),
+      // home: Dashboard(selectedBottomTab: 0),
     );
   }
 }
